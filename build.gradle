@@ -1,0 +1,90 @@
+plugins {
+    id 'java'
+    id("com.palantir.docker") version "0.35.0" // deploy
+    id("org.hidetake.ssh") version "2.11.2" // deploy
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
+}
+
+group = 'com.ohs'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+
+    // 원격의 selenium grid에 명령 내리기 위함.
+    implementation("org.seleniumhq.selenium:selenium-java:4.21.0")
+
+    // 직렬화/ 역직렬화
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2'
+
+    // 테스트
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    testImplementation 'org.mockito:mockito-core:4.6.1'
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.6.1'
+
+    // 롬복
+    compileOnly 'org.projectlombok:lombok:1.18.24'  // 자동설정 플러그인이 없으므로, 버전 직접 설정해줘야함
+    annotationProcessor 'org.projectlombok:lombok:1.18.24'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+/*기본적인 jar 태스크는 애플리케이션의 클래스 파일과 리소스 파일만을 포함합니다. 그러나 애플리케이션이 의존하는 외부 라이브러리(JAR 파일 형태의 종속성)는 포함하지 않습니다.
+따라서, 이러한 종속성을 포함하지 않으면 실행 시 NoClassDefFoundError와 같은 오류가 발생할 수 있습니다.
+이를 해결하기 위해 "fat JAR" 또는 "uber JAR"를 생성해야 합니다. Fat JAR는 애플리케이션 코드뿐만 아니라 모든 의존성 라이브러리를 포함한 단일 JAR 파일입니다.*/
+shadowJar  {
+    // JAR 파일의 이름 설정
+    archiveBaseName.set('collector')
+    archiveVersion.set('')
+    archiveClassifier.set('')
+
+    manifest {
+        attributes(
+                'Main-Class': 'com.ohs.problemcollector.Main'  // 여기에 메인 클래스 이름을 지정
+        )
+    }
+}
+
+docker {
+
+    name = "${project.group}/collector:latest"
+    //files '.'
+    //files 'build/libs/collector.jar' // 빌드시 필요한 파일들 포함시키기.
+    copySpec.from("build/libs").into(".")
+    copySpec.from("./config.properties").into(".")
+}
+
+dockerPrepare{
+    dependsOn shadowJar
+}
+
+task pushDockerImageToRegistry {
+    dependsOn 'docker'
+
+    String addr = project.property('REGISTRY_ADDRESS')
+    String username = project.property('REGISTRY_USERNAME')
+    String password = project.property('REGISTRY_PASSWORD')
+
+    String targetImageName = "${project.group}/collector:latest";
+    String resultImageName = "${addr}/${targetImageName}"
+
+    doLast {
+        exec {
+            commandLine 'docker', 'login', addr, '--username', username, '--password', password
+        }
+        exec {
+            commandLine 'docker', 'tag', targetImageName, resultImageName
+        }
+        exec {
+            commandLine 'docker', 'push', resultImageName
+        }
+    }
+}
