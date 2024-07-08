@@ -4,6 +4,8 @@ services:
     container_name: selenium-chrome
     expose:
       - "4444"
+    ports:
+      - "4444:4444"  # 로컬 환경에서 테스트 위해 임시적으로 오픈
     shm_size: 2g  # 셀레늄 브라우저의 메모리 이슈를 방지하기 위해 공유 메모리 사이즈 설정
   collector:
     image: registry.ohs.kr:443/com.ohs/collector:latest

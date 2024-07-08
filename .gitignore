@@ -6,6 +6,7 @@ build/
 
 
 config.properties
+config_dev.properties
 gradle.properties
 
 ### IntelliJ IDEA ###
