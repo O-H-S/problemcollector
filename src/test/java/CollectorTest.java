@@ -40,7 +40,7 @@ public class CollectorTest {
         collector.setDriver(driver);
 
 
-        List<ProblemDto> resultProblems = collector.getProblemsFromWindow(1);
+        List<ProblemDto> resultProblems = collector.getProblemsFromWindow(310);
 
         int resultCount =  collector.getWindowsCount();
         assertTrue(resultCount > 0); //

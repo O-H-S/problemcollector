@@ -34,6 +34,19 @@ dependencies {
 }
 
 test {
+    doFirst {
+        file('envs/test.env').readLines().each { line ->
+            if (!line.isEmpty() && !line.startsWith("#")) {
+                def pos = line.indexOf("=")
+                def key = line.substring(0, pos)
+                def value = line.substring(pos + 1)
+                if (System.getenv(key) == null) {
+                    environment key, value
+                }
+                println "Setting environment variable: $key=$value"
+            }
+        }
+    }
     useJUnitPlatform()
 }
 
