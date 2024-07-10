@@ -9,6 +9,7 @@ services:
       #- "4444:4444"
       #- "${SELENIUM_PORT_MAPPING:-}"
     shm_size: 2g  # 셀레늄 브라우저의 메모리 이슈를 방지하기 위해 공유 메모리 사이즈 설정
+    restart: always
   collector:
     image: registry.ohs.kr:443/com.ohs/collector:latest
     #image: testcollector
@@ -17,3 +18,4 @@ services:
       - prod.env
     depends_on:
       - selenium-chrome
+    restart: always
