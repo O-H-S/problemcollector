@@ -2,8 +2,7 @@ services:
   selenium-chrome:
     image: selenium/standalone-chrome:4.21.0 # selenium 버전 4.21.0 크롬 버전 125
     container_name: selenium-chrome
-    env_file:
-      - prod.env
+
     expose:
       - "4444"
     #ports:
@@ -12,6 +11,9 @@ services:
     shm_size: 2g  # 셀레늄 브라우저의 메모리 이슈를 방지하기 위해 공유 메모리 사이즈 설정
   collector:
     image: registry.ohs.kr:443/com.ohs/collector:latest
+    #image: testcollector
     container_name: collector
+    env_file:
+      - prod.env
     depends_on:
       - selenium-chrome

@@ -6,7 +6,7 @@ FROM openjdk:17-jdk-alpine
 
 # 로컬 - 빌드 컨텍스트 - 이미지
 # 빌드 컨텍스트에서의 파일을 이미지로 복사함.
-COPY . .
+COPY ./build/libs .
 
 
 # 컨테이너에서 애플리케이션 실행
